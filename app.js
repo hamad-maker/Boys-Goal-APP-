@@ -4,7 +4,7 @@
 // ============================================
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, doc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 // --- Firebase Config ---
@@ -92,9 +92,10 @@ function showSyncStatus(type, message) {
 // --- Firebase Auth ---
 function signInWithGoogle() {
     const provider = new GoogleAuthProvider();
+    // Try popup first, fall back to redirect (works better on mobile & when popups blocked)
     signInWithPopup(auth, provider).catch((error) => {
-        console.error('Sign-in error:', error);
-        showToast('Sign-in failed. Try again.');
+        console.log('Popup blocked or failed, trying redirect...', error.code);
+        signInWithRedirect(auth, provider);
     });
 }
 
@@ -810,6 +811,13 @@ function initUI() {
 // --- Auth State Listener ---
 function init() {
     initUI();
+
+    // Handle redirect result (for when popup was blocked and redirect was used)
+    getRedirectResult(auth).catch((error) => {
+        if (error.code !== 'auth/no-redirect') {
+            console.error('Redirect sign-in error:', error);
+        }
+    });
 
     onAuthStateChanged(auth, async (user) => {
         loadingScreen.classList.add('hidden');
