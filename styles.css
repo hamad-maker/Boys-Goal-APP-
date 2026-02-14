@@ -158,8 +158,9 @@ body {
     transition: all 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
     box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     border: 1px solid rgba(255, 255, 255, 0.5);
+    z-index: 1;
 }
 
 .goal-card::before {
@@ -168,25 +169,28 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    bottom: 0;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, transparent 50%, var(--goal-color, var(--accent)) 100%);
+    opacity: 0.08;
     pointer-events: none;
+    z-index: -1;
 }
 
 .goal-card::after {
     content: '';
     position: absolute;
-    bottom: -24px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80%;
-    height: 56px;
+    bottom: -12px;
+    left: 15%;
+    width: 70%;
+    height: 40px;
     background: var(--goal-color, var(--accent));
-    filter: blur(28px);
-    opacity: 0.35;
+    filter: blur(22px);
+    opacity: 0.5;
     border-radius: 50%;
     pointer-events: none;
     transition: opacity 0.35s ease, filter 0.35s ease;
+    z-index: -1;
 }
 
 .goal-card:hover {
@@ -196,8 +200,8 @@ body {
 }
 
 .goal-card:hover::after {
-    opacity: 0.55;
-    filter: blur(32px);
+    opacity: 0.7;
+    filter: blur(26px);
 }
 
 .goal-card:active {
@@ -229,6 +233,8 @@ body {
     border-radius: 3px;
     overflow: hidden;
     margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
 }
 
 .goal-card-progress-fill {
@@ -257,7 +263,12 @@ body {
 
 .goal-card.completed-card::after {
     background: var(--success);
-    opacity: 0.3;
+    opacity: 0.4;
+}
+
+.goal-card.completed-card::before {
+    background: linear-gradient(180deg, transparent 50%, var(--success) 100%);
+    opacity: 0.08;
 }
 
 .goal-card.completed-card .goal-card-percent {
@@ -1279,31 +1290,34 @@ body {
     }
 
     .goal-card {
-        background: rgba(30, 30, 32, 0.65);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.15);
+        background: rgba(28, 28, 30, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
 
     .goal-card::before {
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+        background: linear-gradient(180deg, transparent 40%, var(--goal-color, var(--accent)) 100%);
+        opacity: 0.12;
     }
 
     .goal-card::after {
-        opacity: 0.45;
-        filter: blur(30px);
+        opacity: 0.6;
+        filter: blur(24px);
+        height: 48px;
     }
 
     .goal-card:hover {
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
-        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 36px rgba(0, 0, 0, 0.4);
+        border-color: rgba(255, 255, 255, 0.12);
     }
 
     .goal-card:hover::after {
-        opacity: 0.65;
+        opacity: 0.8;
+        filter: blur(28px);
     }
 
     .goal-card.completed-card {
-        background: rgba(30, 60, 35, 0.5);
-        border-color: rgba(52, 199, 89, 0.12);
+        background: rgba(30, 60, 35, 0.6);
+        border-color: rgba(52, 199, 89, 0.15);
     }
 }
