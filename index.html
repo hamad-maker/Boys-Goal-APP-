@@ -59,6 +59,10 @@
                     <input type="number" id="goal-target" placeholder="e.g., 4000000" required min="1">
                 </div>
                 <div class="form-group">
+                    <label for="goal-deadline">Deadline (Optional)</label>
+                    <input type="date" id="goal-deadline">
+                </div>
+                <div class="form-group">
                     <label for="goal-icon">Icon</label>
                     <div class="icon-picker" id="icon-picker">
                         <button type="button" class="icon-btn active" data-icon="star">&#9733;</button>
@@ -109,6 +113,7 @@
                 <div class="detail-hero" id="detail-hero">
                     <div class="detail-icon" id="detail-icon"></div>
                     <h2 class="detail-title" id="detail-title"></h2>
+                    <div class="detail-deadline hidden" id="detail-deadline"></div>
                     <div class="detail-progress-ring" id="detail-progress-ring">
                         <svg viewBox="0 0 120 120">
                             <circle class="progress-bg" cx="60" cy="60" r="52" />

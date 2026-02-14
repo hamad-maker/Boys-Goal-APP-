@@ -89,6 +89,31 @@
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
 
+    function getDeadlineInfo(goal) {
+        if (!goal.deadline) return null;
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const deadline = new Date(goal.deadline + 'T00:00:00');
+        const diff = deadline - now;
+        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+        const isComplete = goal.achieved >= goal.target;
+        const dateStr = deadline.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        if (isComplete) {
+            return { text: 'Completed', class: 'deadline-done', days: days, dateStr: dateStr };
+        }
+        if (days < 0) {
+            return { text: Math.abs(days) + 'd overdue', class: 'deadline-overdue', days: days, dateStr: dateStr };
+        }
+        if (days === 0) {
+            return { text: 'Due today', class: 'deadline-urgent', days: days, dateStr: dateStr };
+        }
+        if (days <= 7) {
+            return { text: days + 'd left', class: 'deadline-urgent', days: days, dateStr: dateStr };
+        }
+        return { text: days + 'd left', class: '', days: days, dateStr: dateStr };
+    }
+
     function getProgress(goal) {
         if (goal.target <= 0) return 0;
         return Math.min((goal.achieved / goal.target) * 100, 100);
@@ -135,6 +160,11 @@
                         }
                     </div>
                     ${isComplete ? '<div class="completed-badge">\u2713 Done</div>' : ''}
+                    ${(() => {
+                        const dl = getDeadlineInfo(goal);
+                        if (!dl || isComplete) return '';
+                        return '<div class="goal-card-deadline ' + dl.class + '">' + dl.text + '</div>';
+                    })()}
                 </div>
             `;
         }).join('');
@@ -158,6 +188,17 @@
         // Set hero
         $('#detail-icon').textContent = ICONS[goal.icon] || ICONS.star;
         $('#detail-title').textContent = goal.name;
+
+        // Deadline
+        const deadlineEl = $('#detail-deadline');
+        const dlInfo = getDeadlineInfo(goal);
+        if (dlInfo) {
+            deadlineEl.classList.remove('hidden', 'deadline-urgent', 'deadline-overdue', 'deadline-done');
+            if (dlInfo.class) deadlineEl.classList.add(dlInfo.class);
+            deadlineEl.textContent = dlInfo.dateStr + ' \u2022 ' + dlInfo.text;
+        } else {
+            deadlineEl.classList.add('hidden');
+        }
 
         // Progress ring
         const progress = getProgress(goal);
@@ -330,6 +371,7 @@
             $('#create-title').textContent = 'Edit Goal';
             $('#goal-name').value = goal.name;
             $('#goal-target').value = goal.target;
+            $('#goal-deadline').value = goal.deadline || '';
             selectedType = goal.type;
             selectedIcon = goal.icon;
             selectedColor = goal.color;
@@ -339,6 +381,7 @@
             $('#create-title').textContent = 'New Goal';
             $('#goal-name').value = '';
             $('#goal-target').value = '';
+            $('#goal-deadline').value = '';
             selectedType = 'financial';
             selectedIcon = 'star';
             selectedColor = '#007AFF';
@@ -387,6 +430,7 @@
 
         const name = $('#goal-name').value.trim();
         const target = parseInt($('#goal-target').value, 10);
+        const deadline = $('#goal-deadline').value || null;
 
         if (!name) {
             showToast('Please enter a goal name');
@@ -403,6 +447,7 @@
             if (goal) {
                 goal.name = name;
                 goal.target = target;
+                goal.deadline = deadline;
                 goal.type = selectedType;
                 goal.icon = selectedIcon;
                 goal.color = selectedColor;
@@ -416,6 +461,7 @@
                 id: generateId(),
                 name: name,
                 target: target,
+                deadline: deadline,
                 achieved: 0,
                 type: selectedType,
                 icon: selectedIcon,
