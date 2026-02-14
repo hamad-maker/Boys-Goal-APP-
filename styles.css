@@ -1035,32 +1035,92 @@ body {
     line-height: 1.5;
 }
 
-.auth-google-btn {
-    display: inline-flex;
-    align-items: center;
+/* Auth Form */
+.auth-form {
+    display: flex;
+    flex-direction: column;
     gap: 12px;
-    padding: 14px 28px;
+    margin-bottom: 16px;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 14px 16px;
     font-size: 16px;
-    font-weight: 600;
     font-family: var(--font);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
     background: var(--bg-secondary);
     color: var(--text-primary);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    cursor: pointer;
-    box-shadow: var(--shadow-md);
+    outline: none;
     transition: all var(--transition);
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.auth-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.12);
+}
+
+.auth-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.auth-error {
+    font-size: 13px;
+    color: var(--danger);
+    text-align: left;
+    padding: 0 2px;
+    margin: -4px 0;
+    line-height: 1.4;
+}
+
+.auth-submit-btn {
     width: 100%;
-    justify-content: center;
+    padding: 15px;
+    font-size: 17px;
+    font-weight: 600;
+    font-family: var(--font);
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition);
+    margin-top: 4px;
 }
 
-.auth-google-btn:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-1px);
+.auth-submit-btn:hover {
+    filter: brightness(1.05);
 }
 
-.auth-google-btn:active {
+.auth-submit-btn:active {
     transform: scale(0.98);
+}
+
+.auth-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.auth-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-family: var(--font);
+    cursor: pointer;
+    padding: 8px;
+    transition: color var(--transition);
+}
+
+.auth-toggle-btn strong {
+    color: var(--accent);
+}
+
+.auth-toggle-btn:hover {
+    color: var(--text-primary);
 }
 
 /* --- User Bar --- */

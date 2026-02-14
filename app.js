@@ -4,7 +4,7 @@
 // ============================================
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, doc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 // --- Firebase Config ---
@@ -90,27 +90,64 @@ function showSyncStatus(type, message) {
 }
 
 // --- Firebase Auth ---
-function signInWithGoogle() {
-    const provider = new GoogleAuthProvider();
-    const btn = $('#google-sign-in-btn');
+let isSignUpMode = false;
+
+function showAuthError(msg) {
+    const el = $('#auth-error');
+    el.textContent = msg;
+    el.classList.remove('hidden');
+}
+
+function hideAuthError() {
+    $('#auth-error').classList.add('hidden');
+}
+
+function handleAuthSubmit(e) {
+    e.preventDefault();
+    hideAuthError();
+
+    const email = $('#auth-email').value.trim();
+    const password = $('#auth-password').value;
+    const btn = $('#auth-submit-btn');
+
+    if (!email || !password) {
+        showAuthError('Please enter email and password');
+        return;
+    }
+
     btn.disabled = true;
-    btn.textContent = 'Signing in...';
+    btn.textContent = isSignUpMode ? 'Creating account...' : 'Signing in...';
 
-    // Try popup first, fall back to redirect (works better on mobile & when popups blocked)
-    signInWithPopup(auth, provider).catch((error) => {
-        console.warn('Popup sign-in failed:', error.code, error.message);
+    const authFn = isSignUpMode
+        ? createUserWithEmailAndPassword(auth, email, password)
+        : signInWithEmailAndPassword(auth, email, password);
 
-        // If user just closed the popup, reset button
-        if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-            btn.disabled = false;
-            btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Sign in with Google`;
-            return;
-        }
+    authFn.then(() => {
+        // onAuthStateChanged will handle the rest
+    }).catch((error) => {
+        btn.disabled = false;
+        btn.textContent = isSignUpMode ? 'Sign Up' : 'Sign In';
 
-        // For other errors (popup blocked, unauthorized domain, etc.), try redirect
-        console.log('Falling back to redirect sign-in...');
-        signInWithRedirect(auth, provider);
+        const messages = {
+            'auth/user-not-found': 'No account with this email. Try Sign Up instead.',
+            'auth/wrong-password': 'Wrong password. Try again.',
+            'auth/invalid-credential': 'Wrong email or password. Try again.',
+            'auth/email-already-in-use': 'Email already registered. Try Sign In instead.',
+            'auth/weak-password': 'Password must be at least 6 characters.',
+            'auth/invalid-email': 'Please enter a valid email address.',
+            'auth/too-many-requests': 'Too many attempts. Wait a moment and try again.'
+        };
+        showAuthError(messages[error.code] || 'Sign in failed: ' + error.message);
     });
+}
+
+function toggleAuthMode() {
+    isSignUpMode = !isSignUpMode;
+    hideAuthError();
+    $('#auth-submit-btn').textContent = isSignUpMode ? 'Sign Up' : 'Sign In';
+    $('#auth-toggle-btn').innerHTML = isSignUpMode
+        ? 'Already have an account? <strong>Sign In</strong>'
+        : "Don't have an account? <strong>Sign Up</strong>";
 }
 
 function handleSignOut() {
@@ -814,8 +851,9 @@ function initUI() {
     // Sign out
     $('#sign-out-btn').addEventListener('click', handleSignOut);
 
-    // Google sign in
-    $('#google-sign-in-btn').addEventListener('click', signInWithGoogle);
+    // Email/password auth
+    $('#auth-form').addEventListener('submit', handleAuthSubmit);
+    $('#auth-toggle-btn').addEventListener('click', toggleAuthMode);
 
     // Resize canvas
     window.addEventListener('resize', resizeCanvas);
@@ -832,15 +870,6 @@ function init() {
         loadingScreen.classList.add('hidden');
         authScreen.classList.remove('hidden');
     }, 4000);
-
-    // Handle redirect result (for when popup was blocked and redirect was used)
-    getRedirectResult(auth).then((result) => {
-        if (result && result.user) {
-            console.log('Redirect sign-in successful');
-        }
-    }).catch((error) => {
-        console.error('Redirect sign-in error:', error.code, error.message);
-    });
 
     onAuthStateChanged(auth, async (user) => {
         clearTimeout(loadingTimeout);
