@@ -335,7 +335,7 @@ function renderHome() {
         const progress = getProgress(goal);
         const isComplete = goal.achieved >= goal.target;
         return `
-            <div class="goal-card ${isComplete ? 'completed-card' : ''}" data-id="${goal.id}">
+            <div class="goal-card ${isComplete ? 'completed-card' : ''}" data-id="${goal.id}" style="--goal-color:${goal.color}">
                 <span class="goal-card-icon">${ICONS[goal.icon] || ICONS.star}</span>
                 <div class="goal-card-name">${escapeHtml(goal.name)}</div>
                 <div class="goal-card-percent" style="color:${goal.color}">${Math.round(progress)}%</div>
