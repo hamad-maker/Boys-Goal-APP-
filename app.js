@@ -429,31 +429,7 @@ function getWeekDates(offset) {
 // HUB SCREEN
 // ============================================
 function renderHub() {
-    // Goals stat
-    const goalsStat = $('#hub-goals-stat');
-    if (goals.length > 0) {
-        const completed = goals.filter(g => g.achieved >= g.target).length;
-        goalsStat.textContent = completed + '/' + goals.length;
-        goalsStat.style.color = '#007AFF';
-        goalsStat.classList.add('has-data');
-    } else {
-        goalsStat.textContent = '';
-        goalsStat.classList.remove('has-data');
-    }
-
-    // Habits stat
-    const habitsStat = $('#hub-habits-stat');
-    if (habits.length > 0) {
-        const today = getTodayStr();
-        const todayChecks = habitChecks[today] || {};
-        const done = habits.filter(h => todayChecks[h.id]).length;
-        habitsStat.textContent = done + '/' + habits.length;
-        habitsStat.style.color = '#34C759';
-        habitsStat.classList.add('has-data');
-    } else {
-        habitsStat.textContent = '';
-        habitsStat.classList.remove('has-data');
-    }
+    // Hub is now just static cards - no dynamic content needed
 }
 
 // ============================================
