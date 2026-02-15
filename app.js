@@ -47,6 +47,10 @@ let currentUser = null;
 let unsubscribeSnapshot = null;
 let isSyncingFromCloud = false;
 
+// Notification state
+let swRegistration = null;
+let reminderTimeout = null;
+
 // ============================================
 // CONSTANTS
 // ============================================
@@ -625,18 +629,23 @@ function addEntry() {
     openGoalDetail(currentGoalId);
 
     const progress = getProgress(goal);
+    const prevProgress = progress - (amount / goal.target * 100);
     if (goal.achieved >= goal.target) {
         showToast('\uD83C\uDF89 Goal completed! Amazing work!');
         triggerCelebration('big');
-    } else if (progress >= 75 && progress - (amount / goal.target * 100) < 75) {
+        sendMilestoneNotification(goal.name, 100);
+    } else if (progress >= 75 && prevProgress < 75) {
         showToast('\uD83D\uDD25 75% done! Almost there!');
         triggerCelebration('medium');
-    } else if (progress >= 50 && progress - (amount / goal.target * 100) < 50) {
+        sendMilestoneNotification(goal.name, 75);
+    } else if (progress >= 50 && prevProgress < 50) {
         showToast('\uD83D\uDCAA Halfway there! Keep going!');
         triggerCelebration('medium');
-    } else if (progress >= 25 && progress - (amount / goal.target * 100) < 25) {
+        sendMilestoneNotification(goal.name, 50);
+    } else if (progress >= 25 && prevProgress < 25) {
         showToast('\u2B50 25% milestone reached!');
         triggerCelebration('small');
+        sendMilestoneNotification(goal.name, 25);
     } else {
         showToast('\u2713 Entry added');
         triggerCelebration('tiny');
@@ -1402,6 +1411,140 @@ function animateConfetti() {
 }
 
 // ============================================
+// NOTIFICATIONS
+// ============================================
+async function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        try {
+            swRegistration = await navigator.serviceWorker.register('./sw.js');
+        } catch (err) {
+            console.warn('SW registration failed:', err);
+        }
+    }
+}
+
+function getNotifSettings() {
+    try {
+        const data = localStorage.getItem('riseup_notif');
+        return data ? JSON.parse(data) : { enabled: false, time: '09:00' };
+    } catch { return { enabled: false, time: '09:00' }; }
+}
+
+function saveNotifSettings(settings) {
+    localStorage.setItem('riseup_notif', JSON.stringify(settings));
+}
+
+async function requestNotifPermission() {
+    if (!('Notification' in window)) return 'denied';
+    if (Notification.permission === 'granted') return 'granted';
+    if (Notification.permission === 'denied') return 'denied';
+    return await Notification.requestPermission();
+}
+
+function updateNotifUI() {
+    const settings = getNotifSettings();
+    const toggle = $('#notif-enabled');
+    const timeRow = $('#notif-time-row');
+    const timeInput = $('#notif-time');
+    const status = $('#notif-status');
+
+    toggle.checked = settings.enabled;
+    timeInput.value = settings.time;
+    timeRow.classList.toggle('hidden', !settings.enabled);
+
+    if (!('Notification' in window)) {
+        status.textContent = 'Notifications not supported in this browser.';
+    } else if (Notification.permission === 'denied') {
+        status.textContent = 'Notifications blocked. Enable in browser settings.';
+    } else if (settings.enabled) {
+        status.textContent = 'Reminder set for ' + formatTime12(settings.time) + ' daily.';
+    } else {
+        status.textContent = 'Enable to get daily habit reminders.';
+    }
+}
+
+function formatTime12(time24) {
+    const [h, m] = time24.split(':').map(Number);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const hour = h % 12 || 12;
+    return hour + ':' + String(m).padStart(2, '0') + ' ' + ampm;
+}
+
+function scheduleReminder() {
+    if (reminderTimeout) {
+        clearTimeout(reminderTimeout);
+        reminderTimeout = null;
+    }
+
+    const settings = getNotifSettings();
+    if (!settings.enabled) return;
+    if (Notification.permission !== 'granted') return;
+
+    const [h, m] = settings.time.split(':').map(Number);
+    const now = new Date();
+    const target = new Date();
+    target.setHours(h, m, 0, 0);
+
+    // If the time already passed today, schedule for tomorrow
+    if (target <= now) {
+        target.setDate(target.getDate() + 1);
+    }
+
+    const delay = target - now;
+    reminderTimeout = setTimeout(() => {
+        sendReminderNotification();
+        // Reschedule for next day
+        scheduleReminder();
+    }, delay);
+}
+
+function sendReminderNotification() {
+    const today = getTodayStr();
+    const todayChecks = habitChecks[today] || {};
+    const total = habits.length;
+    const done = habits.filter(h => todayChecks[h.id]).length;
+    const remaining = total - done;
+
+    let body;
+    if (total === 0) {
+        body = "Start your day right! Add some habits to track.";
+    } else if (remaining === 0) {
+        body = "All " + total + " habits done today! Keep the streak alive!";
+    } else {
+        body = remaining + " of " + total + " habits left today. You got this!";
+    }
+
+    if (swRegistration) {
+        navigator.serviceWorker.controller?.postMessage({
+            type: 'SHOW_REMINDER',
+            body: body
+        });
+    } else if (Notification.permission === 'granted') {
+        new Notification('RiseUp - Daily Reminder', { body, tag: 'daily-reminder' });
+    }
+}
+
+function sendMilestoneNotification(goalName, percent, emoji) {
+    if (Notification.permission !== 'granted') return;
+
+    let body;
+    if (percent >= 100) {
+        body = goalName + ' is complete! Amazing work!';
+    } else {
+        body = goalName + ' just hit ' + percent + '%! Keep going!';
+    }
+
+    if (swRegistration) {
+        navigator.serviceWorker.controller?.postMessage({
+            type: 'GOAL_MILESTONE',
+            body: body
+        });
+    } else {
+        new Notification('RiseUp - Goal Milestone!', { body, tag: 'goal-milestone' });
+    }
+}
+
+// ============================================
 // EVENT LISTENERS
 // ============================================
 function initUI() {
@@ -1594,6 +1737,41 @@ function initUI() {
         });
     });
 
+    // === NOTIFICATIONS ===
+    $('#notif-enabled').addEventListener('change', async (e) => {
+        const settings = getNotifSettings();
+        if (e.target.checked) {
+            const perm = await requestNotifPermission();
+            if (perm === 'granted') {
+                settings.enabled = true;
+                saveNotifSettings(settings);
+                scheduleReminder();
+            } else {
+                e.target.checked = false;
+                settings.enabled = false;
+                saveNotifSettings(settings);
+            }
+        } else {
+            settings.enabled = false;
+            saveNotifSettings(settings);
+            if (reminderTimeout) {
+                clearTimeout(reminderTimeout);
+                reminderTimeout = null;
+            }
+        }
+        updateNotifUI();
+    });
+
+    $('#notif-time').addEventListener('change', (e) => {
+        const settings = getNotifSettings();
+        settings.time = e.target.value;
+        saveNotifSettings(settings);
+        scheduleReminder();
+        updateNotifUI();
+    });
+
+    updateNotifUI();
+
     // === AUTH ===
     $('#sign-out-btn').addEventListener('click', handleSignOut);
     $('#auth-form').addEventListener('submit', handleAuthSubmit);
@@ -1609,6 +1787,8 @@ function initUI() {
 // ============================================
 function init() {
     initUI();
+    registerServiceWorker();
+    scheduleReminder();
 
     const loadingTimeout = setTimeout(() => {
         console.warn('Firebase Auth timeout - showing login screen');

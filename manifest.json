@@ -1,0 +1,10 @@
+{
+    "name": "RiseUp",
+    "short_name": "RiseUp",
+    "description": "Track your goals & habits. Rise every day.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f5f5f7",
+    "theme_color": "#007AFF",
+    "icons": []
+}

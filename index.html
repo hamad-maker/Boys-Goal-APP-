@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RiseUp</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f5f5f7">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -56,6 +58,23 @@
                     <span class="hub-card-icon">&#9989;</span>
                     <div class="hub-card-name">Habit Tracker</div>
                 </button>
+            </div>
+
+            <!-- Notification Settings -->
+            <div class="notif-settings" id="notif-settings">
+                <div class="notif-header">
+                    <span class="notif-bell">&#128276;</span>
+                    <span class="notif-title">Daily Reminder</span>
+                    <label class="notif-toggle">
+                        <input type="checkbox" id="notif-enabled">
+                        <span class="notif-toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="notif-time-row hidden" id="notif-time-row">
+                    <label for="notif-time" class="notif-time-label">Remind me at</label>
+                    <input type="time" id="notif-time" value="09:00" class="notif-time-input">
+                </div>
+                <p class="notif-status" id="notif-status"></p>
             </div>
         </div>
 
