@@ -2,23 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Goals Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RiseUp</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <!-- Loading Screen -->
     <div id="loading-screen" class="loading-screen">
         <div class="loading-spinner"></div>
-        <p class="loading-text">Loading your goals...</p>
+        <p class="loading-text">Loading RiseUp...</p>
     </div>
 
     <!-- Auth Screen -->
     <div id="auth-screen" class="auth-screen hidden">
         <div class="auth-container">
-            <div class="auth-icon">&#127919;</div>
-            <h1 class="auth-title">Goals Tracker</h1>
-            <p class="auth-subtitle">Sign in to sync your goals across all your devices</p>
+            <div class="auth-icon">&#9889;</div>
+            <h1 class="auth-title">RiseUp</h1>
+            <p class="auth-subtitle">Track your goals &amp; habits. Rise every day.</p>
             <form id="auth-form" class="auth-form">
                 <input type="email" id="auth-email" class="auth-input" placeholder="Email" required autocomplete="email">
                 <input type="password" id="auth-password" class="auth-input" placeholder="Password (min 6 chars)" required minlength="6" autocomplete="current-password">
@@ -28,26 +28,62 @@
             <button class="auth-toggle-btn" id="auth-toggle-btn">Don't have an account? <strong>Sign Up</strong></button>
         </div>
     </div>
+
     <!-- Sync Status Bar -->
     <div id="sync-status" class="sync-status hidden">
         <span id="sync-icon" class="sync-icon"></span>
         <span id="sync-text" class="sync-text"></span>
     </div>
 
-    <!-- Home Screen -->
     <div id="app" class="hidden">
-        <div id="home-screen" class="screen active">
+
+        <!-- ===== HUB SCREEN ===== -->
+        <div id="hub-screen" class="screen active">
             <div class="user-bar" id="user-bar">
                 <span class="user-email" id="user-email"></span>
                 <button class="sign-out-btn" id="sign-out-btn">Sign Out</button>
             </div>
             <div class="screen-header">
+                <h1 class="screen-title">RiseUp</h1>
+                <p class="screen-subtitle">Rise every day</p>
+            </div>
+            <div class="hub-cards">
+                <div class="hub-card" id="hub-goals-card" style="--hub-color: #007AFF">
+                    <div class="hub-card-icon">&#127919;</div>
+                    <div class="hub-card-content">
+                        <h2 class="hub-card-title">Goal Tracker</h2>
+                        <p class="hub-card-desc">Set targets, track progress, crush your goals</p>
+                        <div class="hub-card-stat" id="hub-goals-stat"></div>
+                    </div>
+                    <div class="hub-card-arrow">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+                </div>
+                <div class="hub-card" id="hub-habits-card" style="--hub-color: #34C759">
+                    <div class="hub-card-icon">&#9989;</div>
+                    <div class="hub-card-content">
+                        <h2 class="hub-card-title">Habit Tracker</h2>
+                        <p class="hub-card-desc">Build daily habits, track streaks, view reports</p>
+                        <div class="hub-card-stat" id="hub-habits-stat"></div>
+                    </div>
+                    <div class="hub-card-arrow">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== GOAL TRACKER: Home ===== -->
+        <div id="home-screen" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" id="goals-home-back-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    RiseUp
+                </button>
                 <h1 class="screen-title">My Goals</h1>
                 <p class="screen-subtitle" id="home-subtitle">Keep pushing forward</p>
             </div>
-            <div id="goals-grid" class="goals-grid">
-                <!-- Goal cards rendered here -->
-            </div>
+            <div id="goals-grid" class="goals-grid"></div>
             <button class="fab" id="add-goal-btn" aria-label="Add new goal">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -56,13 +92,11 @@
             </button>
         </div>
 
-        <!-- Create/Edit Goal Screen -->
+        <!-- ===== GOAL TRACKER: Create/Edit ===== -->
         <div id="create-screen" class="screen">
             <div class="screen-header">
                 <button class="back-btn" id="create-back-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                     Back
                 </button>
                 <h1 class="screen-title" id="create-title">New Goal</h1>
@@ -124,13 +158,11 @@
             </form>
         </div>
 
-        <!-- Goal Detail Screen -->
+        <!-- ===== GOAL TRACKER: Detail ===== -->
         <div id="detail-screen" class="screen">
             <div class="screen-header">
                 <button class="back-btn" id="detail-back-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                     Goals
                 </button>
                 <button class="edit-btn" id="edit-goal-btn">
@@ -169,8 +201,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Add Entry Section -->
                 <div class="add-entry-section" id="add-entry-section">
                     <div class="entry-input-row">
                         <input type="number" id="entry-amount" class="entry-input" placeholder="Enter amount" min="1">
@@ -184,13 +214,9 @@
                     </div>
                     <input type="text" id="entry-note" class="entry-note-input" placeholder="Add a note (optional)">
                 </div>
-
-                <!-- Entries List -->
                 <div class="entries-section">
                     <h3 class="section-title">History</h3>
-                    <div id="entries-list" class="entries-list">
-                        <!-- Entries rendered here -->
-                    </div>
+                    <div id="entries-list" class="entries-list"></div>
                     <div id="empty-entries" class="empty-state">
                         <p>No entries yet</p>
                         <p class="empty-hint">Add your first entry above to start tracking</p>
@@ -198,6 +224,144 @@
                 </div>
             </div>
         </div>
+
+        <!-- ===== HABIT TRACKER: Home ===== -->
+        <div id="habits-screen" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" id="habits-back-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    RiseUp
+                </button>
+                <h1 class="screen-title">Habits</h1>
+            </div>
+
+            <!-- Today's Habits -->
+            <div class="today-section">
+                <h3 class="section-title" id="today-date-label">Today</h3>
+                <div id="today-habits-list" class="today-habits-list"></div>
+                <div id="habits-empty" class="empty-state hidden">
+                    <p>No habits yet</p>
+                    <p class="empty-hint">Tap + to create your first habit</p>
+                </div>
+            </div>
+
+            <!-- Weekly Grid -->
+            <div class="week-section">
+                <div class="week-header">
+                    <h3 class="section-title">This Week</h3>
+                    <div class="week-nav">
+                        <button class="week-nav-btn" id="week-prev-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        </button>
+                        <span class="week-label" id="week-label"></span>
+                        <button class="week-nav-btn" id="week-next-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="habit-grid-scroll">
+                    <div id="habit-grid" class="habit-grid"></div>
+                </div>
+            </div>
+
+            <!-- Reports Button -->
+            <button class="reports-link-btn" id="open-reports-btn">
+                <span>&#128202;</span> View Reports
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+
+            <!-- Reset Button -->
+            <button class="reset-tracker-btn" id="reset-tracker-btn">Reset This Week</button>
+
+            <button class="fab" id="add-habit-btn" aria-label="Add new habit">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
+        </div>
+
+        <!-- ===== HABIT TRACKER: Add/Edit Habit ===== -->
+        <div id="habit-form-screen" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" id="habit-form-back-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    Back
+                </button>
+                <h1 class="screen-title" id="habit-form-title">New Habit</h1>
+            </div>
+            <form id="habit-form" class="form-container">
+                <div class="form-group">
+                    <label for="habit-name">Habit Name</label>
+                    <input type="text" id="habit-name" placeholder="e.g., Workout, Reading" required>
+                </div>
+                <div class="form-group">
+                    <label>Icon</label>
+                    <div class="icon-picker" id="habit-icon-picker">
+                        <button type="button" class="icon-btn active" data-icon="workout">&#128170;</button>
+                        <button type="button" class="icon-btn" data-icon="reading">&#128214;</button>
+                        <button type="button" class="icon-btn" data-icon="meditation">&#129496;</button>
+                        <button type="button" class="icon-btn" data-icon="water">&#128167;</button>
+                        <button type="button" class="icon-btn" data-icon="running">&#127939;</button>
+                        <button type="button" class="icon-btn" data-icon="journal">&#128221;</button>
+                        <button type="button" class="icon-btn" data-icon="creative">&#127912;</button>
+                        <button type="button" class="icon-btn" data-icon="sleep">&#128564;</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Color</label>
+                    <div class="color-picker" id="habit-color-picker">
+                        <button type="button" class="color-btn active" data-color="#34C759" style="background:#34C759"></button>
+                        <button type="button" class="color-btn" data-color="#007AFF" style="background:#007AFF"></button>
+                        <button type="button" class="color-btn" data-color="#FF9500" style="background:#FF9500"></button>
+                        <button type="button" class="color-btn" data-color="#FF3B30" style="background:#FF3B30"></button>
+                        <button type="button" class="color-btn" data-color="#AF52DE" style="background:#AF52DE"></button>
+                        <button type="button" class="color-btn" data-color="#FF2D55" style="background:#FF2D55"></button>
+                        <button type="button" class="color-btn" data-color="#5856D6" style="background:#5856D6"></button>
+                        <button type="button" class="color-btn" data-color="#00C7BE" style="background:#00C7BE"></button>
+                    </div>
+                </div>
+                <button type="submit" class="primary-btn" id="save-habit-btn">Create Habit</button>
+                <button type="button" class="danger-btn hidden" id="delete-habit-btn">Delete Habit</button>
+            </form>
+        </div>
+
+        <!-- ===== HABIT TRACKER: Reports ===== -->
+        <div id="habit-reports-screen" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" id="reports-back-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    Back
+                </button>
+                <h1 class="screen-title">Reports</h1>
+            </div>
+            <div class="reports-content">
+                <!-- Period Toggle -->
+                <div class="report-toggle">
+                    <button class="report-toggle-btn active" data-period="weekly">Weekly</button>
+                    <button class="report-toggle-btn" data-period="monthly">Monthly</button>
+                </div>
+
+                <!-- Bar Chart -->
+                <div class="report-section">
+                    <h3 class="report-section-title">Completion Rate</h3>
+                    <div id="report-bar-chart" class="report-bar-chart"></div>
+                </div>
+
+                <!-- Line Chart -->
+                <div class="report-section">
+                    <h3 class="report-section-title">Trend</h3>
+                    <canvas id="report-line-chart" class="report-line-canvas"></canvas>
+                </div>
+
+                <!-- Heat Map -->
+                <div class="report-section">
+                    <h3 class="report-section-title">Heat Map</h3>
+                    <div id="report-heat-map" class="report-heat-map"></div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Celebration Canvas -->
