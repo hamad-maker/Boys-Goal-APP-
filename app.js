@@ -1387,24 +1387,19 @@ function animateConfetti() {
 // EVENT LISTENERS
 // ============================================
 function initUI() {
-    // === HUB ===
-    const goalsCard = $('#hub-goals-card');
-    const habitsCard = $('#hub-habits-card');
-
-    function openGoals() {
-        showScreen(homeScreen);
-        renderHome();
-    }
-    function openHabits() {
-        showScreen(habitsScreen);
-        renderHabitsScreen();
-    }
-
-    goalsCard.addEventListener('click', openGoals);
-    goalsCard.addEventListener('touchend', (e) => { e.preventDefault(); openGoals(); });
-
-    habitsCard.addEventListener('click', openHabits);
-    habitsCard.addEventListener('touchend', (e) => { e.preventDefault(); openHabits(); });
+    // === HUB (event delegation for robust click handling) ===
+    $('#hub-grid').addEventListener('click', (e) => {
+        const card = e.target.closest('.hub-card');
+        if (!card) return;
+        const target = card.dataset.target;
+        if (target === 'goals') {
+            showScreen(homeScreen);
+            renderHome();
+        } else if (target === 'habits') {
+            showScreen(habitsScreen);
+            renderHabitsScreen();
+        }
+    });
 
     // === GOAL TRACKER ===
     $('#add-goal-btn').addEventListener('click', () => openCreateForm());
