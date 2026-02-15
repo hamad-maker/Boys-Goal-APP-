@@ -433,11 +433,12 @@ function renderHub() {
     const goalsStat = $('#hub-goals-stat');
     if (goals.length > 0) {
         const completed = goals.filter(g => g.achieved >= g.target).length;
-        goalsStat.textContent = completed + '/' + goals.length + ' completed';
-        goalsStat.style.display = 'block';
+        goalsStat.textContent = completed + '/' + goals.length;
+        goalsStat.style.color = '#007AFF';
+        goalsStat.classList.add('has-data');
     } else {
         goalsStat.textContent = '';
-        goalsStat.style.display = 'none';
+        goalsStat.classList.remove('has-data');
     }
 
     // Habits stat
@@ -446,11 +447,12 @@ function renderHub() {
         const today = getTodayStr();
         const todayChecks = habitChecks[today] || {};
         const done = habits.filter(h => todayChecks[h.id]).length;
-        habitsStat.textContent = done + '/' + habits.length + ' today';
-        habitsStat.style.display = 'block';
+        habitsStat.textContent = done + '/' + habits.length;
+        habitsStat.style.color = '#34C759';
+        habitsStat.classList.add('has-data');
     } else {
         habitsStat.textContent = '';
-        habitsStat.style.display = 'none';
+        habitsStat.classList.remove('has-data');
     }
 }
 
@@ -1386,14 +1388,23 @@ function animateConfetti() {
 // ============================================
 function initUI() {
     // === HUB ===
-    $('#hub-goals-card').addEventListener('click', () => {
+    const goalsCard = $('#hub-goals-card');
+    const habitsCard = $('#hub-habits-card');
+
+    function openGoals() {
         showScreen(homeScreen);
         renderHome();
-    });
-    $('#hub-habits-card').addEventListener('click', () => {
+    }
+    function openHabits() {
         showScreen(habitsScreen);
         renderHabitsScreen();
-    });
+    }
+
+    goalsCard.addEventListener('click', openGoals);
+    goalsCard.addEventListener('touchend', (e) => { e.preventDefault(); openGoals(); });
+
+    habitsCard.addEventListener('click', openHabits);
+    habitsCard.addEventListener('touchend', (e) => { e.preventDefault(); openHabits(); });
 
     // === GOAL TRACKER ===
     $('#add-goal-btn').addEventListener('click', () => openCreateForm());
