@@ -393,6 +393,16 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+function resolveGoalIcon(icon) {
+    if (icon && icon.startsWith('custom:')) return icon.slice(7);
+    return ICONS[icon] || ICONS.star;
+}
+
+function resolveHabitIcon(icon) {
+    if (icon && icon.startsWith('custom:')) return icon.slice(7);
+    return HABIT_ICONS[icon] || HABIT_ICONS.workout;
+}
+
 function getDateStr(date) {
     const d = new Date(date);
     return d.getFullYear() + '-' +
@@ -461,7 +471,7 @@ function renderHome() {
         const isComplete = goal.achieved >= goal.target;
         return `
             <div class="goal-card ${isComplete ? 'completed-card' : ''}" data-id="${goal.id}" style="--goal-color:${goal.color}">
-                <span class="goal-card-icon">${ICONS[goal.icon] || ICONS.star}</span>
+                <span class="goal-card-icon">${resolveGoalIcon(goal.icon)}</span>
                 <div class="goal-card-name">${escapeHtml(goal.name)}</div>
                 <div class="goal-card-percent" style="color:${goal.color}">${Math.round(progress)}%</div>
                 <div class="goal-card-progress-bar">
@@ -498,7 +508,7 @@ function openGoalDetail(id) {
     currentGoalId = id;
     showScreen(detailScreen);
 
-    $('#detail-icon').textContent = ICONS[goal.icon] || ICONS.star;
+    $('#detail-icon').textContent = resolveGoalIcon(goal.icon);
     $('#detail-title').textContent = goal.name;
 
     const deadlineEl = $('#detail-deadline');
@@ -688,7 +698,24 @@ function updateTypeUI() {
     $$('.type-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.type === selectedType));
 }
 function updateIconUI() {
-    $$('#icon-picker .icon-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.icon === selectedIcon));
+    const isCustom = selectedIcon.startsWith('custom:');
+    $$('#icon-picker .icon-btn').forEach(btn => {
+        if (btn.dataset.icon === 'custom') {
+            btn.classList.toggle('active', isCustom);
+            if (isCustom) {
+                btn.textContent = selectedIcon.slice(7);
+                btn.classList.add('has-emoji');
+            } else {
+                btn.textContent = '+';
+                btn.classList.remove('has-emoji');
+            }
+        } else {
+            btn.classList.toggle('active', btn.dataset.icon === selectedIcon);
+        }
+    });
+    const emojiInput = $('#goal-custom-emoji');
+    emojiInput.classList.toggle('visible', isCustom);
+    if (isCustom) emojiInput.value = selectedIcon.slice(7);
 }
 function updateColorUI() {
     $$('#color-picker .color-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.color === selectedColor));
@@ -781,7 +808,7 @@ function renderTodayHabits() {
     list.innerHTML = habits.map(habit => {
         const checked = todayChecks[habit.id] || false;
         const streak = getStreak(habit.id);
-        const icon = HABIT_ICONS[habit.icon] || HABIT_ICONS.workout;
+        const icon = resolveHabitIcon(habit.icon);
 
         return `
             <div class="today-habit-item ${checked ? 'checked' : ''}" data-habit-id="${habit.id}" data-date="${today}">
@@ -853,7 +880,7 @@ function renderWeekGrid() {
     html += '</div>';
 
     habits.forEach(habit => {
-        const icon = HABIT_ICONS[habit.icon] || HABIT_ICONS.workout;
+        const icon = resolveHabitIcon(habit.icon);
         let checkedCount = 0;
 
         html += '<div class="habit-grid-row">';
@@ -953,9 +980,24 @@ function openHabitForm(editId) {
 }
 
 function updateHabitIconUI() {
+    const isCustom = selectedHabitIcon.startsWith('custom:');
     $$('#habit-icon-picker .icon-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.icon === selectedHabitIcon);
+        if (btn.dataset.icon === 'custom') {
+            btn.classList.toggle('active', isCustom);
+            if (isCustom) {
+                btn.textContent = selectedHabitIcon.slice(7);
+                btn.classList.add('has-emoji');
+            } else {
+                btn.textContent = '+';
+                btn.classList.remove('has-emoji');
+            }
+        } else {
+            btn.classList.toggle('active', btn.dataset.icon === selectedHabitIcon);
+        }
     });
+    const emojiInput = $('#habit-custom-emoji');
+    emojiInput.classList.toggle('visible', isCustom);
+    if (isCustom) emojiInput.value = selectedHabitIcon.slice(7);
 }
 
 function updateHabitColorUI() {
@@ -1415,9 +1457,31 @@ function initUI() {
 
     $$('#icon-picker .icon-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            selectedIcon = btn.dataset.icon;
-            updateIconUI();
+            if (btn.dataset.icon === 'custom') {
+                const emojiInput = $('#goal-custom-emoji');
+                if (!selectedIcon.startsWith('custom:')) {
+                    selectedIcon = 'custom:';
+                }
+                updateIconUI();
+                emojiInput.focus();
+            } else {
+                selectedIcon = btn.dataset.icon;
+                updateIconUI();
+            }
         });
+    });
+
+    $('#goal-custom-emoji').addEventListener('input', (e) => {
+        const val = e.target.value;
+        if (val) {
+            // Get the first emoji/character (handles multi-codepoint emoji)
+            const emoji = [...val][0];
+            selectedIcon = 'custom:' + emoji;
+            e.target.value = emoji;
+            const customBtn = $('#goal-custom-icon-btn');
+            customBtn.textContent = emoji;
+            customBtn.classList.add('has-emoji');
+        }
     });
 
     $$('#color-picker .color-btn').forEach(btn => {
@@ -1454,9 +1518,30 @@ function initUI() {
 
     $$('#habit-icon-picker .icon-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            selectedHabitIcon = btn.dataset.icon;
-            updateHabitIconUI();
+            if (btn.dataset.icon === 'custom') {
+                const emojiInput = $('#habit-custom-emoji');
+                if (!selectedHabitIcon.startsWith('custom:')) {
+                    selectedHabitIcon = 'custom:';
+                }
+                updateHabitIconUI();
+                emojiInput.focus();
+            } else {
+                selectedHabitIcon = btn.dataset.icon;
+                updateHabitIconUI();
+            }
         });
+    });
+
+    $('#habit-custom-emoji').addEventListener('input', (e) => {
+        const val = e.target.value;
+        if (val) {
+            const emoji = [...val][0];
+            selectedHabitIcon = 'custom:' + emoji;
+            e.target.value = emoji;
+            const customBtn = $('#habit-custom-icon-btn');
+            customBtn.textContent = emoji;
+            customBtn.classList.add('has-emoji');
+        }
     });
 
     $$('#habit-color-picker .color-btn').forEach(btn => {
